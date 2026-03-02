@@ -126,8 +126,12 @@ public class ParameterContentGeneratorTest {
     assertTrue( output.contains( "<?xml version=" ) );
     assertTrue( output.contains( "<parameters" ) );
     assertTrue( output.contains( "param1" ) );
+    assertTrue( output.contains( "value1" ) );
     assertTrue( output.contains( "param2" ) );
+    assertTrue( output.contains( "value2" ) );
     assertTrue( output.contains( "var1" ) );
+    assertTrue( output.contains( "varValue1" ) );
+    assertFalse( output.contains( "duplicate" ) ); // Variable with same name as param should be filtered
 
     verify( pdiContentProvider ).getUserParameters( "/path/to/file.ktr" );
     verify( pdiContentProvider ).getVariables( "/path/to/file.ktr" );
@@ -145,12 +149,14 @@ public class ParameterContentGeneratorTest {
 
     Map<String, String> userParams = new HashMap<>();
     userParams.put( "param1", "value1" );
+    userParams.put( "param2", "value2" );
 
     Map<String, String> variables = new HashMap<>();
     variables.put( "var1", "varValue1" );
+    variables.put( "param1", "duplicate" ); // This should be filtered out
 
-    when( pdiContentProvider.getUserParameters( "/vfs/path/to/file.ktr" ) ).thenReturn( userParams );
-    when( pdiContentProvider.getVariables( "/vfs/path/to/file.ktr" ) ).thenReturn( variables );
+    when( pdiContentProvider.getUserParameters( fileObject ) ).thenReturn( userParams );
+    when( pdiContentProvider.getVariables( fileObject ) ).thenReturn( variables );
 
     // Mock empty request parameters
     when( requestParams.getParameterNames() ).thenReturn( new java.util.ArrayList<String>().iterator() );
@@ -169,6 +175,13 @@ public class ParameterContentGeneratorTest {
     assertNotNull( output );
     assertTrue( output.contains( "<?xml version=" ) );
     assertTrue( output.contains( "<parameters" ) );
+    assertTrue( output.contains( "param1" ) );
+    assertTrue( output.contains( "value1" ) );
+    assertTrue( output.contains( "param2" ) );
+    assertTrue( output.contains( "value2" ) );
+    assertTrue( output.contains( "var1" ) );
+    assertTrue( output.contains( "varValue1" ) );
+    assertFalse( output.contains( "duplicate" ) ); // Variable with same name as param should be filtered
 
     verify( pdiContentProvider ).getUserParameters( fileObject );
     verify( pdiContentProvider ).getVariables( fileObject );
@@ -207,6 +220,10 @@ public class ParameterContentGeneratorTest {
     String output = outputStream.toString();
     assertNotNull( output );
     assertTrue( output.contains( "<?xml version=" ) );
+    assertTrue( output.contains( "param1" ) );
+    assertTrue( output.contains( "value1" ) );
+    assertTrue( output.contains( "var1" ) );
+    assertTrue( output.contains( "varValue1" ) );
 
     verify( repository ).getFile( "/home/admin/file.ktr" );
     verify( pdiContentProvider ).getUserParameters( "/home/admin/file.ktr" );
